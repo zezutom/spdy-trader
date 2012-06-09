@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.spdy.SPDYServerConnector;
@@ -24,6 +25,8 @@ import org.zezutom.spdytrader.impl.server.StopOperation;
 
 public class SPDYServerProxy implements ServerProxy {
 
+	private static final Logger logger = Logger.getLogger(SPDYServerProxy.class);
+	
 	private Server server;
 
 	private DataTransformer transformer = new JacksonDataTransformer();
@@ -55,11 +58,10 @@ public class SPDYServerProxy implements ServerProxy {
 										
 					@Override
 					public void onData(Stream stream, DataInfo dataInfo) {
-						// Client data received: TODO inspect 'dataInfo' to get the data
-						System.out.println("Received request for " + url);
+						// Client data received
+						logger.info("Received request for " + url);
 												
 						if ("/prices".equals(url)) {
-							System.out.println("received price request for: ");							
 							String[] assets = transformer.getPortfolio(dataInfo.asBytes(true));
 														
 							Map<String, BigDecimal> priceMap = new HashMap<String, BigDecimal>();
@@ -68,8 +70,11 @@ public class SPDYServerProxy implements ServerProxy {
 								priceMap.put(asset, dao.getPrice(asset));
 							}
 							stream.data(new BytesDataInfo(transformer.toBytes(priceMap), false));
+						} else if ("/favourite".equals(url)) {
+							String[] assets = transformer.getPortfolio(dataInfo.asBytes(true));							
+							stream.data(new StringDataInfo(dao.getMostTraded(assets), false));							
 						} else {
-							stream.data(new StringDataInfo("replying back", false));
+							logger.info("Unknown request: " + url);
 						}												
 					}
 				};

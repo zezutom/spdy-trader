@@ -22,15 +22,8 @@ public interface MarketDAO {
 	/**
 	 * Finds out which asset is being traded the most at the moment.
 	 * 
+	 * @param	the monitored portfolio
 	 * @return	asset identifier
 	 */
-	String getMostTraded();
-	
-	/**
-	 * Tells how many traders are momentarily online.
-	 * 
-	 * @return	the total of logged in users
-	 */
-	int getTradersOnline();
-	
+	String getMostTraded(String...portfolio);	
 }
